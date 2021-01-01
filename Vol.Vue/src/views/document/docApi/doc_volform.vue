@@ -11,15 +11,15 @@
     <div class="i-text">
       <h2>表单</h2>
     </div>
-    <VolForm
-      ref="myform"
-      :label-width="150"
-      :loadKey="true"
-      :formFileds="formFileds1"
-      :formRules="formRules1"
-    ></VolForm>
+    <VolForm ref="myform"
+             :label-width="150"
+             :loadKey="true"
+             :formFields="formFields1"
+             :formRules="formRules1"></VolForm>
     <div>
-      <Button type="info" long @click="reset">重置表单</Button>
+      <Button type="info"
+              long
+              @click="reset">重置表单</Button>
     </div>
     <div>
       <docParamTable name="form"></docParamTable>
@@ -32,14 +32,14 @@ import docParamTable from "./doc_ParamTable.vue";
 export default {
   components: { VolForm, docParamTable },
   methods: {
-    reset() {
+    reset () {
       this.$refs.myform.reset();
       this.$Message.error("表单已重置");
     }
   },
-  data() {
+  data () {
     return {
-      formFileds1: {
+      formFields1: {
         Variety: 1,
         AgeRange: "",
         DateRange: [],
@@ -57,11 +57,13 @@ export default {
         SelectList: ["北京市", "上海市", "天津市", "广州市", "重庆市"],
         remoteSearch: "",
         readonlyText: "还没想好....",
+        //多个图片可以用逗号隔开
         readonlyImg:
           "https://imgs-1256993465.cos.ap-chengdu.myqcloud.com/h5pic/x2.jpg",
         ProImg:
-          "https://imgs-1256993465.cos.ap-chengdu.myqcloud.com/h5pic/x3.jpg"
-        //多个图片可以用逗号隔开
+          "https://imgs-1256993465.cos.ap-chengdu.myqcloud.com/h5pic/x3.jpg",
+        cascader1: ["beijing", "tiantan"], //级联默认值2020.05.31
+        cascader2: [] //懒加载的级联默认值
       },
       formRules1: [
         //两列的表单，formRules数据格式为:[[{},{}]]
@@ -72,14 +74,40 @@ export default {
             required: true,
             field: "City",
             data: [],
-            type: "select"
+            type: "select",
+            extra: {
+              render: h => {
+                return h(
+                  "div",
+                  {
+                    props: {}, style: { color: "#03A9F4", cursor: "pointer" },
+                    on: { click: () => { this.$Message.info("点击事件") } }
+                  },
+                  [
+                    h(
+                      "Tooltip",
+                      {
+                        props: { content: "这里是提示的内容", placement: "right-start" },
+                        class: "ivu-icon ivu-icon-ios-alert-outline",
+                        style: {}
+                      }, [
+                      h("span", {}, ["提示"])
+                    ]
+                    )
+                  ]
+                );
+              }
+            }
           },
           {
             title: "手动绑定数据源",
             dataKey: "age",
             placeholder: "在这里可设置提示描述",
             //如果这里绑定了data数据，后台不会加载此数据源
-            data: [{ key: 1, value: "是" }, { key: 0, value: "否" }],
+            data: [
+              { key: 1, value: "是" },
+              { key: 0, value: "否" }
+            ],
             required: false,
             field: "Variety",
             type: "select"
@@ -93,7 +121,7 @@ export default {
             type: "phone",
             onKeyPress: $event => {
               if ($event.keyCode == 13) {
-                this.$Message.error(this.formFileds1.AgeRange + "");
+                this.$Message.error(this.formFields1.AgeRange + "");
               }
             }
           },
@@ -222,6 +250,96 @@ export default {
             readonly: true, //设置readonly或disabled都行
             field: "readonlyText",
             type: "text"
+          }
+        ],
+        [
+          {
+            title: "级联1",//2020.05.31联级操作
+            //如果这里绑定了data数据，后台不会加载此数据源
+            data: [
+              {
+                value: "beijing",
+                label: "北京",
+                loading: false,
+                children: [
+                  {
+                    value: "gugong",
+                    label: "故宫"
+                  },
+                  {
+                    value: "tiantan",
+                    label: "天坛"
+                  },
+                  {
+                    value: "wangfujing",
+                    label: "王府井"
+                  }
+                ]
+              }
+            ],
+            field: "cascader1",
+            type: "cascader",
+            required: true,
+            //格式化显示(非必须)
+            formatter: (labels, selectedData) => {
+              const index = labels.length - 1;
+              const data = selectedData[index] || false;
+              if (data && data.label) {
+                return labels[index] + " - " + data.label + " - (格式化测试)";
+              }
+              return labels[index];
+            }
+          },
+          {
+            title: "级联懒加载", //2020.05.31联级操作
+            //如果这里绑定了data数据，后台不会加载此数据源
+            data: [
+              {
+                value: "zhejiang",
+                label: "浙江",
+                loading: false,
+                children: []
+              }
+            ],
+            field: "cascader2",
+            required: true,
+            type: "cascader",
+            //懒加载数据源
+            loadData: (item, callback) => {
+              if (item.children.length > 0) return;
+              item.loading = true;
+              setTimeout(() => {
+                item.loading = false;
+                item.children = [
+                  {
+                    value: "hangzhou",
+                    label: "杭州",
+                    children: [
+                      {
+                        value: "xihu",
+                        label: "西湖",
+                        code: 1000
+                      }
+                    ]
+                  }
+                ];
+                callback();
+              }, 1000);
+              // this.http.post("xxx").then(children => {
+              //   item.loading = false;
+              //   item.children = children;
+              //   //children格式或参照iview组件cascader动态加载选项的配置
+              //   // [{
+              //   //   value: 'hangzhou',
+              //   //   label: '杭州',
+              //   //   children: [{
+              //   //     value: 'xihu',
+              //   //     label: '西湖',
+              //   //     code: 1000
+              //   //   }]
+              //   // }]
+              // });
+            }
           }
         ],
         [

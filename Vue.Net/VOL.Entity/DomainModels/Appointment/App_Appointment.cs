@@ -13,7 +13,7 @@ using VOL.Entity.SystemModels;
 
 namespace VOL.Entity.DomainModels
 {
-    
+    [Table("App_Appointment")]
     public class App_Appointment:BaseEntity
     {
         /// <summary>

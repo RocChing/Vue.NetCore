@@ -13,6 +13,7 @@ using VOL.Entity.SystemModels;
 
 namespace VOL.Entity.DomainModels
 {
+    [Table("App_Transaction")]
     [Entity(TableCnName = "导入导出")]
     public class App_Transaction:BaseEntity
     {

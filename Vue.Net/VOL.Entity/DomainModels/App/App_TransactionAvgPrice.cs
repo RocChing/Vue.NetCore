@@ -13,6 +13,7 @@ using VOL.Entity.SystemModels;
 
 namespace VOL.Entity.DomainModels
 {
+    [Table("App_TransactionAvgPrice")]
     [Entity(TableCnName = "成交均价")]
     public class App_TransactionAvgPrice:BaseEntity
     {

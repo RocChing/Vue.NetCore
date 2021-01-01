@@ -13,6 +13,7 @@ import formsMulti from './formsMulti'
 import charts from './charts'
 import tables from './tables'
 import documents from './documents'
+import workFlow from './workFlow'
 Vue.use(Router)
 
 const router = new Router({
@@ -21,6 +22,11 @@ const router = new Router({
     ...exampleRouter,
     ...h5,
     ...documents,
+    {
+      path: '/bigdata',
+      name: 'bigdata',
+      component: () => import('@/views/charts/bigdata.vue')
+    },
     {
       path: '*',
       component: () => import('@/views/redirect/404.vue')
@@ -37,6 +43,7 @@ const router = new Router({
         ...formsMulti,//Demo一对多表单路由
         ...charts,//Demo图表单路由
         ...tables,
+        ...workFlow,
         {
           path: '/home',
           name: 'home',
@@ -75,9 +82,9 @@ const router = new Router({
 
 
 router.beforeEach((to, from, next) => {
-  store.getters.getUserInfo()
   if (to.matched.length == 0) return next({ path: '/404' });
-
+  //2020.06.03增加路由切换时加载提示
+  store.dispatch("onLoading", true);
   if ((to.hasOwnProperty('meta') && to.meta.anonymous) || store.getters.isLogin()) {
     return next();
   }
@@ -85,6 +92,10 @@ router.beforeEach((to, from, next) => {
   next({ path: '/login', query: { redirect: Math.random() } });
 })
 
+//2020.06.03增加路由切换时加载提示
+router.afterEach((to, from) => {
+  store.dispatch("onLoading", false);
+})
 router.onError((error) => {
   const pattern = /Loading chunk (\d)+ failed/g;
   const isChunkLoadFailed = error.message.match(pattern);
